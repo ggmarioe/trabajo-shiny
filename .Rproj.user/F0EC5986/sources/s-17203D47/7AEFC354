@@ -1,0 +1,26 @@
+{
+    "id": "7AEFC354",
+    "path": "~/Documents/diplomado/R/shiny/trabajo_shiny/app.R",
+    "project_path": "trabajo_shiny/app.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1638754216854.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "77,24",
+        "scrollLine": "56"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1638758260,
+    "encoding": "ISO8859-1",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1638758260480,
+    "read_only": false,
+    "read_only_alternatives": []
+}
