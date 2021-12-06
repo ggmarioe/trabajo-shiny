@@ -8,11 +8,18 @@
 #
 if(!require(tidyverse)) install.packages("tidyverse")
 if(!require(jsonlite))  install.packages("jsonlite") 
+if(!require(DT))  install.packages("DT") 
+if(!require(shinythemes))  install.packages("shinythemes") 
+if(!require(shiny))  install.packages("shiny") 
+if(!require(shinydashboard))  install.packages("shinydashboard") 
 
+library(DT)
 library(shiny)
 library(tidyverse)
 library(jsonlite)
-
+library(shiny)
+library(shinythemes)
+library(shinydashboard)
 
 lista_empresas <- c("NUEVAPOLAR", "SMU", "BESALCO", "COPEC", "FALABELLA", 
                     "BSANTANDER",  "CMPC", "CHILE", "SQM-B", "ENELAM", "CENCOSUD",
@@ -24,21 +31,22 @@ lista_empresas <- c("NUEVAPOLAR", "SMU", "BESALCO", "COPEC", "FALABELLA",
                     "SK", "SMSAAM")
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
-
+ui <- dashboardPage(
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    dashboardHeader(),
 
     # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
+    dashboardSidebar(
+        #sidebarPanel(
            selectInput("empresa", "Empresa", lista_empresas),
            sliderInput("periodo", "Periodo", min = 1, max = 5, value = 2)
-        ),
+    ),
 
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
+    # Show a plot of the generated distribution
+    dashboardBody(
+        fluidRow(
+            plotOutput("distPlot"),
+            DT::dataTableOutput("tablaIndicadores")    
         )
     )
 )
@@ -67,15 +75,21 @@ obtener_indicadores <- function(empresa) {
  
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+    #
+    # indicadores <- obtener_indicadores(x)  
+    #datatable(indicadores)
     
-    #x <- input$slider1
-    #d <- obtener_indicadores(input$empresa)    
     output$distPlot <- renderPlot({
         set.seed(2022)
         x <- input$empresa
-        data <- obtener_indicadores(x)
-        print(data)
-        plot(data$precio, type = "b")
+        indicadores <<- obtener_indicadores(x)
+        
+        plot(indicadores$precio, type = "b")
+    })
+    output$tablaIndicadores <- DT::renderDataTable({
+        indicadores %>% 
+            group_by(anio) %>% 
+            summarise(sum = sum(precio))
     })
 }
 
