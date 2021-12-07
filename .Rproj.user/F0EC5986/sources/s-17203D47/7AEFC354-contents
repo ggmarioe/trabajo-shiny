@@ -39,23 +39,25 @@ ui <- dashboardPage(
     dashboardSidebar(
         #sidebarPanel(
            selectInput("empresa", "Empresa", lista_empresas),
-           sliderInput("periodo", "Periodo", min = 1, max = 5, value = 2)
+           sliderInput("periodo", "Periodo", min = 2000, max = 2021, value = c(2000,2021))
     ),
 
     # Show a plot of the generated distribution
     dashboardBody(
         fluidRow(
             plotOutput("distPlot"),
-            DT::dataTableOutput("tablaIndicadores")    
+            DT::dataTableOutput("tablaIndicadores"),
+            textOutput("anioInicio")
         )
-    )
+    ),
+    
 )
 
 
-obtener_indicadores <- function(empresa) { 
-    
+obtener_indicadores <- function(empresa,inicio,fin) { 
+    data_empresa <- str_replace(empresa, " ", "%20")
     url <- stringr::str_c("https://www.elmercurio.com/inversiones/json/json.aspx?categoria=", 
-                          empresa, "&time=10&indicador=2") 
+                          data_empresa, "&time=10&indicador=2") 
     
     df <- jsonlite::read_json(url)$Data %>% 
         stringr::str_split(";") %>% 
@@ -68,28 +70,36 @@ obtener_indicadores <- function(empresa) {
             fecha = lubridate::ymd_hms(fecha),
             anio = lubridate::year(fecha)
         ) 
-    df 
+    anioInicio <<- min(df$anio)
+    df %>% filter(between(anio, inicio, fin))
     
 } 
 
  
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    #
-    # indicadores <- obtener_indicadores(x)  
-    #datatable(indicadores)
+
+    
+    dataExport <- reactive({
+        x <- input$empresa
+        fechaInicio <- input$periodo[1]
+        fechaFin <- input$periodo[2]
+        indicadores <<- obtener_indicadores(x,fechaInicio, fechaFin)
+        indicadores
+    })
+    
     
     output$distPlot <- renderPlot({
         set.seed(2022)
-        x <- input$empresa
-        indicadores <<- obtener_indicadores(x)
-        
-        plot(indicadores$precio, type = "b")
+        data <- dataExport()
+        plot(data$fecha, data$precio )
     })
+    
+    
     output$tablaIndicadores <- DT::renderDataTable({
-        indicadores %>% 
+        dataExport() %>% 
             group_by(anio) %>% 
-            summarise(sum = sum(precio))
+            summarise(Total = sum(precio))
     })
 }
 
